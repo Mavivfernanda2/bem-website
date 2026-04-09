@@ -80,10 +80,18 @@ class User extends Authenticatable
         return $this->role?->name === 'faculty_admin';
     }
 
-    public function isAdmin(): bool
-    {
-        return $this->isSuperAdmin() || $this->isFacultyAdmin();
+    public function isAdmin()
+{
+    if (!$this->role) {
+        return false;
     }
+
+    return in_array($this->role->name, [
+        'super_admin',
+        'admin_univ',
+        'admin_fakultas'
+    ]);
+}
 
     /**
      * ==========================

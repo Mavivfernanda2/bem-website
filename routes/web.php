@@ -23,15 +23,15 @@ use App\Http\Controllers\Admin\LoginMonitorController;
 // Homepage
 Route::get('/', [PageController::class, 'beranda'])->name('beranda');
 
-// Profil BEM Universitas
+// Profil
 Route::get('/profil', [ProfilController::class, 'index'])->name('profil');
 
-// Program Umum
+// Program
 Route::get('/program', [PageController::class, 'program'])->name('program');
 Route::get('/program/{program}', [PageController::class, 'showProgram'])
     ->name('program.detail');
 
-// Berita Umum
+// Berita
 Route::get('/berita', [PageController::class, 'berita'])->name('berita');
 Route::get('/berita/{slug}', [PageController::class, 'beritaDetail'])
     ->name('berita.detail');
@@ -50,24 +50,23 @@ Route::get('/bem-fakultas/{slug}', [PageController::class, 'fakultas'])
 Route::prefix('admin')->name('admin.')->group(function () {
 
     /*
-    |=====================
-    | GUEST (LOGIN ADMIN)
-    |=====================
+    |--------------------------------------------------------------------------
+    | LOGIN ADMIN
+    |--------------------------------------------------------------------------
     */
-    Route::middleware('guest')->group(function () {
+    Route::get('login', [AdminLoginController::class, 'showLoginForm'])
+        ->name('login');
 
-        Route::get('login', [AdminLoginController::class, 'showLoginForm'])
-            ->name('login');
+    Route::post('login', [AdminLoginController::class, 'login'])
+        ->name('login.process');
 
-        Route::post('login', [AdminLoginController::class, 'login']);
-    });
 
     /*
-    |=====================
+    |--------------------------------------------------------------------------
     | AUTH ADMIN
-    |=====================
+    |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth', 'admin', 'update.activity'])->group(function () {
+    Route::middleware(['auth', 'update.activity'])->group(function () {
 
         // Logout
         Route::post('logout', [AdminLoginController::class, 'logout'])
@@ -77,44 +76,51 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
 
-        /*
-        |=====================
-        | FAKULTAS (READ ONLY)
-        |=====================
-        */
-        Route::get('faculties', [FacultyController::class, 'index'])
-            ->name('faculties.index');
 
         /*
-        |=====================
-        | PROGRAM
-        |=====================
+        |--------------------------------------------------------------------------
+        | 🔥 SEMUA ADMIN (UNIV + FAKULTAS)
+        |--------------------------------------------------------------------------
         */
-        Route::resource('programs', ProgramController::class)
-            ->except(['show']);
+        Route::middleware('role:admin_univ,admin_fakultas')->group(function () {
+
+            // Faculties (READ ONLY)
+            Route::get('faculties', [FacultyController::class, 'index'])
+                ->name('faculties.index');
+
+            // Program
+            Route::resource('programs', ProgramController::class)
+                ->except(['show']);
+
+            // News
+            Route::resource('news', NewsController::class)
+                ->except(['show']);
+        });
+
 
         /*
-        |=====================
-        | NEWS
-        |=====================
+        |--------------------------------------------------------------------------
+        | 🔥 ADMIN UNIV ONLY
+        |--------------------------------------------------------------------------
         */
-        Route::resource('news', NewsController::class)
-            ->except(['show']);
+        Route::middleware('role:admin_univ')->group(function () {
+
+            // Users Management
+            Route::resource('users', UserController::class)
+                ->except(['show']);
+        });
+
 
         /*
-        |=====================
-        | SUPER ADMIN ONLY
-        |=====================
+        |--------------------------------------------------------------------------
+        | 🔥 SUPER ADMIN ONLY
+        |--------------------------------------------------------------------------
         */
         Route::middleware('super-admin')->group(function () {
 
             // Faculties FULL CRUD
             Route::resource('faculties', FacultyController::class)
                 ->except(['index', 'show']);
-
-            // Users
-            Route::resource('users', UserController::class)
-                ->except(['show']);
 
             // Settings
             Route::get('settings', [SettingsController::class, 'index'])
@@ -123,9 +129,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('settings', [SettingsController::class, 'update'])
                 ->name('settings.update');
 
-            // 🔥 LOGIN MONITOR (SUPER ADMIN)
+            // Login Monitor
             Route::get('login-monitor', [LoginMonitorController::class, 'index'])
                 ->name('login.monitor');
         });
-    });
-});
+
+    }); // END AUTH
+
+}); // END ADMIN
