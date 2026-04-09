@@ -44,31 +44,43 @@ class ProgramController extends Controller
      * =========================
      */
     public function create(Request $request)
-    {
-        $user = $request->user();
+{
+    $user = $request->user();
 
-        // 🔥 FIX UTAMA DI SINI
-        if ($user->isSuperAdmin()) {
-            // Super Admin lihat SEMUA
-            $organizations = Organization::with('faculty')
-                ->orderBy('name')
-                ->get();
-        } else {
-            // Admin Fakultas → BEM Univ + fakultas sendiri
-            $organizations = Organization::with('faculty')
-                ->whereNull('faculty_id') // BEM UNIVERSITAS
-                ->orWhere('faculty_id', $user->faculty_id)
-                ->orderBy('name')
-                ->get();
-        }
+    // 🔥 GROUPING ORGANISASI
+    if ($user->isSuperAdmin()) {
 
-        $faculties = Faculty::orderBy('name')->get();
+        $bemUniversitas = Organization::where('type', 'bem')
+            ->whereNull('faculty_id')
+            ->get();
 
-        return view('admin.programs.create', compact(
-            'organizations',
-            'faculties'
-        ));
+        $bemFakultas = Organization::where('type', 'bem')
+            ->whereNotNull('faculty_id')
+            ->get();
+
+        $himas = Organization::where('type', 'hima')->get();
+
+    } else {
+
+        $bemUniversitas = Organization::where('type', 'bem')
+            ->whereNull('faculty_id')
+            ->get();
+
+        $bemFakultas = Organization::where('type', 'bem')
+            ->where('faculty_id', $user->faculty_id)
+            ->get();
+
+        $himas = Organization::where('type', 'hima')
+            ->where('faculty_id', $user->faculty_id)
+            ->get();
     }
+
+    return view('admin.programs.create', compact(
+        'bemUniversitas',
+        'bemFakultas',
+        'himas'
+    ));
+}
 
     /**
      * =========================

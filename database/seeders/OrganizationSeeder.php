@@ -10,6 +10,15 @@ class OrganizationSeeder extends Seeder
 {
     public function run(): void
     {
+        // 🔥 BEM UNIVERSITAS (tanpa fakultas)
+        Organization::firstOrCreate([
+            'name' => 'BEM Universitas'
+        ], [
+            'type' => 'bem',
+            'vision' => 'Menjadi organisasi mahasiswa tingkat universitas yang unggul.',
+            'mission' => 'Mengayomi seluruh mahasiswa lintas fakultas.',
+        ]);
+
         /**
          * Struktur Fakultas + BEM + HIMA
          */
@@ -38,14 +47,14 @@ class OrganizationSeeder extends Seeder
                 ],
             ],
             'fakultas-keguruan' => [
-                'bem' => 'BEM Fakultas Keguruan dan Ilmu Pendidikan',
+                'bem' => 'BEM FKIP',
                 'himas' => [
                     'HIMA PGSD',
                     'HIMA PBI',
                 ],
             ],
             'fakultas-agama-islam' => [
-                'bem' => 'BEM Fakultas Agama Islam',
+                'bem' => 'BEM FAI',
                 'himas' => [
                     'HIMA PIAUD',
                     'HIMA PGMI',
@@ -57,27 +66,29 @@ class OrganizationSeeder extends Seeder
             $faculty = Faculty::where('slug', $facultySlug)->first();
 
             if (! $faculty) {
-                continue;
+                continue; // skip kalau fakultas belum ada
             }
 
-            // BEM Fakultas
-            $bem = Organization::create([
+            // 🔥 BEM Fakultas
+            $bem = Organization::firstOrCreate([
+                'name' => $org['bem'],
                 'faculty_id' => $faculty->id,
-                'name'       => $org['bem'],
-                'type'       => 'bem',
-                'vision'     => 'Menjadi organisasi mahasiswa yang progresif dan inspiratif.',
-                'mission'    => 'Mewadahi aspirasi dan pengembangan mahasiswa.',
+            ], [
+                'type' => 'bem',
+                'vision' => 'Menjadi organisasi mahasiswa yang progresif dan inspiratif.',
+                'mission' => 'Mewadahi aspirasi dan pengembangan mahasiswa.',
             ]);
 
-            // HIMA
+            // 🔥 HIMA
             foreach ($org['himas'] as $himaName) {
-                Organization::create([
+                Organization::firstOrCreate([
+                    'name' => $himaName,
                     'faculty_id' => $faculty->id,
-                    'parent_id'  => $bem->id,
-                    'name'       => $himaName,
-                    'type'       => 'hima',
-                    'vision'     => 'Meningkatkan kualitas mahasiswa program studi.',
-                    'mission'    => 'Mendukung akademik dan non-akademik mahasiswa.',
+                ], [
+                    'parent_id' => $bem->id,
+                    'type' => 'hima',
+                    'vision' => 'Meningkatkan kualitas mahasiswa program studi.',
+                    'mission' => 'Mendukung akademik dan non-akademik mahasiswa.',
                 ]);
             }
         }

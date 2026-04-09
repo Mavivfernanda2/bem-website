@@ -44,25 +44,42 @@ class NewsController extends Controller
      * =========================
      */
     public function create(Request $request)
-    {
-        $user = $request->user();
+{
+    $user = $request->user();
 
-        $faculties = $user->isSuperAdmin()
-            ? Faculty::orderBy('name')->get()
-            : Faculty::where('id', $user->faculty_id)->get();
+    if ($user->isSuperAdmin()) {
 
-        $organizations = $user->isSuperAdmin()
-            ? Organization::with('faculty')->orderBy('name')->get()
-            : Organization::where('faculty_id', $user->faculty_id)
-                ->with('faculty')
-                ->orderBy('name')
-                ->get();
+        $bemUniversitas = Organization::where('type', 'bem')
+            ->whereNull('faculty_id')
+            ->get();
 
-        return view('admin.news.create', compact(
-            'faculties',
-            'organizations'
-        ));
+        $bemFakultas = Organization::where('type', 'bem')
+            ->whereNotNull('faculty_id')
+            ->get();
+
+        $himas = Organization::where('type', 'hima')->get();
+
+    } else {
+
+        $bemUniversitas = Organization::where('type', 'bem')
+            ->whereNull('faculty_id')
+            ->get();
+
+        $bemFakultas = Organization::where('type', 'bem')
+            ->where('faculty_id', $user->faculty_id)
+            ->get();
+
+        $himas = Organization::where('type', 'hima')
+            ->where('faculty_id', $user->faculty_id)
+            ->get();
     }
+
+    return view('admin.news.create', compact(
+        'bemUniversitas',
+        'bemFakultas',
+        'himas'
+    ));
+}
 
     /**
      * =========================

@@ -49,12 +49,30 @@
                                text-slate-100 px-4 py-2.5
                                focus:ring-2 focus:ring-emerald-500">
                     <option value="">— Pilih Organisasi —</option>
-                    @foreach($organizations as $org)
-                        <option value="{{ $org->id }}"
-                            @selected(old('organization_id') == $org->id)>
-                            {{ $org->name }}
-                        </option>
-                    @endforeach
+
+<optgroup label="BEM Universitas">
+    @foreach($bemUniversitas as $org)
+        <option value="{{ $org->id }}">
+            {{ $org->name }}
+        </option>
+    @endforeach
+</optgroup>
+
+<optgroup label="BEM Fakultas">
+    @foreach($bemFakultas as $org)
+        <option value="{{ $org->id }}">
+            {{ $org->name }}
+        </option>
+    @endforeach
+</optgroup>
+
+<optgroup label="HIMA">
+    @foreach($himas as $org)
+        <option value="{{ $org->id }}">
+            {{ $org->name }}
+        </option>
+    @endforeach
+</optgroup>
                 </select>
             </div>
 
