@@ -15,7 +15,7 @@ class AdminLoginController extends Controller
      */
     public function showLoginForm()
     {
-        if (Auth::check() && Auth::user()->isAdmin()) {
+        if (Auth::check() && in_array(Auth::user()->role->name, ['super_admin', 'faculty_admin'])) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -72,9 +72,11 @@ class AdminLoginController extends Controller
         $user = Auth::user();
 
         // ==========================
-        // CEK HAK AKSES ADMIN
+        // CEK ROLE ADMIN (FIX DISINI 🔥)
         // ==========================
-        if (!$user->isAdmin()) {
+        $allowedRoles = ['super_admin', 'faculty_admin'];
+
+        if (!$user->role || !in_array($user->role->name, $allowedRoles)) {
             Auth::logout();
 
             return back()->withErrors([

@@ -31,6 +31,86 @@
     </div>
 </section>
 
+{{-- ================= 🔥 STRUKTUR ANGGOTA ================= --}}
+<section class="section-padding">
+    <div class="max-w-7xl mx-auto px-4">
+
+        <div class="text-center mb-12">
+            <span class="inline-block bg-primary/10 text-primary text-sm font-semibold px-4 py-2 rounded-full mb-4">
+                Struktur Organisasi
+            </span>
+            <h2 class="text-3xl font-bold text-primary-darkest">
+                Kepengurusan {{ $faculty->name }}
+            </h2>
+        </div>
+
+        @if($members->count())
+
+            @php
+                $pimpinan = $members->filter(fn($m) =>
+                    in_array($m->position, ['Ketua', 'Wakil Ketua'])
+                );
+
+                $anggota = $members->reject(fn($m) =>
+                    in_array($m->position, ['Ketua', 'Wakil Ketua'])
+                );
+            @endphp
+
+            {{-- 🔥 PIMPINAN (SEJAJAR) --}}
+            <div class="flex justify-center gap-10 mb-12 flex-wrap">
+
+                @foreach($pimpinan as $m)
+                    <div class="bg-white shadow-xl rounded-xl p-6 text-center w-64">
+
+                        <img src="{{ asset('storage/'.$m->photo) }}"
+                             class="w-28 h-28 mx-auto rounded-full object-cover mb-4">
+
+                        <h3 class="font-bold text-lg">{{ $m->name }}</h3>
+
+                        <p class="text-primary font-semibold">
+                            {{ $m->position }}
+                        </p>
+
+                        <span class="text-green-500 text-sm">● Aktif</span>
+                    </div>
+                @endforeach
+
+            </div>
+
+            {{-- 🔥 ANGGOTA --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                @foreach($anggota as $m)
+                    <div class="bg-white shadow rounded-xl p-6 text-center">
+
+                        <img src="{{ asset('storage/'.$m->photo) }}"
+                             class="w-24 h-24 mx-auto rounded-full object-cover mb-3">
+
+                        <h3 class="font-bold text-lg">
+                            {{ $m->name }}
+                        </h3>
+
+                        <p class="text-gray-500">
+                            {{ $m->position }}
+                        </p>
+
+                        <span class="text-green-500 text-sm">
+                            ● Aktif
+                        </span>
+                    </div>
+                @endforeach
+
+            </div>
+
+        @else
+            <p class="text-center text-gray-500">
+                Belum ada data anggota.
+            </p>
+        @endif
+
+    </div>
+</section>
+
 {{-- ================= PROGRAM BEM ================= --}}
 <section class="section-padding">
     <div class="max-w-7xl mx-auto px-4">

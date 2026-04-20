@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -67,31 +66,47 @@ class User extends Authenticatable
 
     /**
      * ==========================
+     * NORMALIZE ROLE NAME (FIX TOTAL)
+     * ==========================
+     */
+    private function getNormalizedRole(): ?string
+    {
+        if (!$this->role || !$this->role->name) {
+            return null;
+        }
+
+        return strtolower(
+            trim(
+                preg_replace('/\s+/', '_', $this->role->name)
+            )
+        );
+    }
+
+    /**
+     * ==========================
      * ROLE CHECKERS
      * ==========================
      */
     public function isSuperAdmin(): bool
     {
-        return $this->role?->name === 'super_admin';
+        return $this->getNormalizedRole() === 'super_admin';
     }
 
     public function isFacultyAdmin(): bool
     {
-        return $this->role?->name === 'faculty_admin';
+        return $this->getNormalizedRole() === 'admin_fakultas';
     }
 
-    public function isAdmin()
-{
-    if (!$this->role) {
-        return false;
-    }
+    public function isAdmin(): bool
+    {
+        $role = $this->getNormalizedRole();
 
-    return in_array($this->role->name, [
-        'super_admin',
-        'admin_univ',
-        'admin_fakultas'
-    ]);
-}
+        return in_array($role, [
+            'super_admin',
+            'admin_univ',
+            'admin_fakultas'
+        ]);
+    }
 
     /**
      * ==========================
@@ -109,27 +124,24 @@ class User extends Authenticatable
 
     /**
      * ==========================
-     * ONLINE STATUS INDICATOR
+     * ONLINE STATUS
      * ==========================
-     * ONLINE = login <= 5 menit terakhir
      */
     public function isOnline(): bool
-{
-    if (!$this->last_login_at) {
-        return false;
+    {
+        if (!$this->last_login_at) {
+            return false;
+        }
+
+        return $this->last_login_at->greaterThan(now()->subMinutes(5));
     }
 
-    // dianggap online jika aktif <= 5 menit terakhir
-    return $this->last_login_at->greaterThan(now()->subMinutes(5));
-}
+    public function lastActiveLabel(): string
+    {
+        if (!$this->last_login_at) {
+            return 'belum pernah aktif';
+        }
 
-public function lastActiveLabel(): string
-{
-    if (!$this->last_login_at) {
-        return 'belum pernah aktif';
+        return $this->last_login_at->diffForHumans();
     }
-
-    return $this->last_login_at->diffForHumans();
-}
-    
 }

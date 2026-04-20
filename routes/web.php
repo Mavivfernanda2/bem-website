@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\LoginMonitorController;
+use App\Http\Controllers\Admin\ProgressController;
+use App\Http\Controllers\Admin\MemberController; // 🔥 TAMBAHAN
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +42,10 @@ Route::get('/berita/{slug}', [PageController::class, 'beritaDetail'])
 Route::get('/bem-fakultas/{slug}', [PageController::class, 'fakultas'])
     ->name('fakultas.show');
 
+// ORMAWA
+Route::get('/ormawa', [PageController::class, 'ormawa'])
+    ->name('ormawa.index');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -63,10 +69,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | AUTH ADMIN
+    | AUTH + ROLE (SEMUA ADMIN)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth', 'update.activity'])->group(function () {
+    Route::middleware(['auth', 'update.activity', 'role:super_admin,faculty_admin'])->group(function () {
 
         // Logout
         Route::post('logout', [AdminLoginController::class, 'logout'])
@@ -76,39 +82,31 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])
             ->name('dashboard');
 
-
         /*
         |--------------------------------------------------------------------------
-        | 🔥 SEMUA ADMIN (UNIV + FAKULTAS)
+        | SEMUA ADMIN (UNIV + FAKULTAS)
         |--------------------------------------------------------------------------
         */
-        Route::middleware('role:admin_univ,admin_fakultas')->group(function () {
 
-            // Faculties (READ ONLY)
-            Route::get('faculties', [FacultyController::class, 'index'])
-                ->name('faculties.index');
+        // Faculties (READ ONLY)
+        Route::get('faculties', [FacultyController::class, 'index'])
+            ->name('faculties.index');
 
-            // Program
-            Route::resource('programs', ProgramController::class)
-                ->except(['show']);
+        // Program
+        Route::resource('programs', ProgramController::class)
+            ->except(['show']);
 
-            // News
-            Route::resource('news', NewsController::class)
-                ->except(['show']);
-        });
+        // News
+        Route::resource('news', NewsController::class)
+            ->except(['show']);
 
+        // Progress ORMAWA
+        Route::get('progress', [ProgressController::class, 'index'])
+            ->name('progress');
 
-        /*
-        |--------------------------------------------------------------------------
-        | 🔥 ADMIN UNIV ONLY
-        |--------------------------------------------------------------------------
-        */
-        Route::middleware('role:admin_univ')->group(function () {
-
-            // Users Management
-            Route::resource('users', UserController::class)
-                ->except(['show']);
-        });
+        // 🔥 MEMBERS (STRUKTUR ANGGOTA)
+        Route::resource('members', MemberController::class)
+            ->except(['show']);
 
 
         /*
@@ -116,7 +114,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         | 🔥 SUPER ADMIN ONLY
         |--------------------------------------------------------------------------
         */
-        Route::middleware('super-admin')->group(function () {
+        Route::middleware('role:super_admin')->group(function () {
+
+            // Users Management
+            Route::resource('users', UserController::class)
+                ->except(['show']);
 
             // Faculties FULL CRUD
             Route::resource('faculties', FacultyController::class)
@@ -134,6 +136,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->name('login.monitor');
         });
 
-    }); // END AUTH
+    }); // END AUTH + ROLE
 
 }); // END ADMIN

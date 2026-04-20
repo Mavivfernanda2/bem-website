@@ -4,7 +4,6 @@
            border-r border-slate-800
            overflow-hidden">
 
-    <!-- WRAPPER MATI TOTAL -->
     <div class="h-full flex flex-col p-4">
 
         <!-- LOGO -->
@@ -30,7 +29,7 @@
             </a>
         </div>
 
-        <!-- MENU (TIDAK SCROLL) -->
+        <!-- MENU -->
         <nav class="flex-1 space-y-2 overflow-hidden">
 
             @php
@@ -43,65 +42,92 @@
                 $label = 'font-medium text-slate-200';
             @endphp
 
+            <!-- Dashboard -->
             <a href="{{ route('admin.dashboard') }}"
                class="{{ $itemBase }} {{ request()->routeIs('admin.dashboard') ? $itemActive : $itemInactive }}">
                 <div class="{{ $iconBase }} {{ request()->routeIs('admin.dashboard') ? $iconActive : $iconInactive }}">🏠</div>
                 <span class="{{ $label }}">Dashboard</span>
             </a>
 
+            <!-- Fakultas -->
             <a href="{{ route('admin.faculties.index') }}"
                class="{{ $itemBase }} {{ request()->routeIs('admin.faculties.*') ? $itemActive : $itemInactive }}">
                 <div class="{{ $iconBase }} {{ request()->routeIs('admin.faculties.*') ? $iconActive : $iconInactive }}">🏫</div>
                 <span class="{{ $label }}">Fakultas</span>
             </a>
 
+            <!-- Program -->
             <a href="{{ route('admin.programs.index') }}"
                class="{{ $itemBase }} {{ request()->routeIs('admin.programs.*') ? $itemActive : $itemInactive }}">
                 <div class="{{ $iconBase }} {{ request()->routeIs('admin.programs.*') ? $iconActive : $iconInactive }}">📦</div>
                 <span class="{{ $label }}">Program</span>
             </a>
 
+            <!-- Berita -->
             <a href="{{ route('admin.news.index') }}"
                class="{{ $itemBase }} {{ request()->routeIs('admin.news.*') ? $itemActive : $itemInactive }}">
                 <div class="{{ $iconBase }} {{ request()->routeIs('admin.news.*') ? $iconActive : $iconInactive }}">📰</div>
                 <span class="{{ $label }}">Berita</span>
             </a>
 
-            @if(auth()->user()->isSuperAdmin())
+            <!-- 🔥 SEMUA ADMIN (SUPER + FAKULTAS) -->
+            @if(auth()->user()->isAdmin())
+
                 <div class="pt-3 mt-2 border-t border-slate-800"></div>
 
-                <a href="{{ route('admin.users.index') }}"
-                   class="{{ $itemBase }} {{ request()->routeIs('admin.users.*') ? $itemActive : $itemInactive }}">
-                    <div class="{{ $iconBase }} {{ request()->routeIs('admin.users.*') ? $iconActive : $iconInactive }}">👥</div>
-                    <span class="{{ $label }}">Pengguna</span>
+                <!-- 🔥 STRUKTUR ANGGOTA (FIX UTAMA) -->
+                <a href="{{ route('admin.members.index') }}"
+                   class="{{ $itemBase }} {{ request()->routeIs('admin.members.*') ? $itemActive : $itemInactive }}">
+                    <div class="{{ $iconBase }} {{ request()->routeIs('admin.members.*') ? $iconActive : $iconInactive }}">🧩</div>
+                    <span class="{{ $label }}">Struktur Anggota</span>
                 </a>
 
-                <a href="{{ route('admin.settings.index') }}"
-                   class="{{ $itemBase }} {{ request()->routeIs('admin.settings.*') ? $itemActive : $itemInactive }}">
-                    <div class="{{ $iconBase }} {{ request()->routeIs('admin.settings.*') ? $iconActive : $iconInactive }}">⚙</div>
-                    <span class="{{ $label }}">Pengaturan</span>
-                </a>
+                <!-- 🔥 KHUSUS SUPER ADMIN -->
+                @if(auth()->user()->isSuperAdmin())
+
+                    <!-- Pengguna -->
+                    <a href="{{ route('admin.users.index') }}"
+                       class="{{ $itemBase }} {{ request()->routeIs('admin.users.*') ? $itemActive : $itemInactive }}">
+                        <div class="{{ $iconBase }} {{ request()->routeIs('admin.users.*') ? $iconActive : $iconInactive }}">👥</div>
+                        <span class="{{ $label }}">Pengguna</span>
+                    </a>
+
+                    <!-- Pengaturan -->
+                    <a href="{{ route('admin.settings.index') }}"
+                       class="{{ $itemBase }} {{ request()->routeIs('admin.settings.*') ? $itemActive : $itemInactive }}">
+                        <div class="{{ $iconBase }} {{ request()->routeIs('admin.settings.*') ? $iconActive : $iconInactive }}">⚙</div>
+                        <span class="{{ $label }}">Pengaturan</span>
+                    </a>
+
+                @endif
+
             @endif
 
         </nav>
 
-        <!-- USER CARD (BUNTALE) -->
+        <!-- USER CARD -->
         <div
             class="mt-4 p-4 rounded-2xl
                    bg-slate-900/80
                    border border-slate-800
                    shadow-lg shadow-black/40 shrink-0">
+
             <div class="flex items-center gap-3">
                 <div class="w-11 h-11 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold">
                     {{ mb_substr(auth()->user()->name, 0, 1) }}
                 </div>
+
                 <div class="min-w-0">
-                    <p class="text-sm font-semibold text-slate-100 truncate">{{ auth()->user()->name }}</p>
+                    <p class="text-sm font-semibold text-slate-100 truncate">
+                        {{ auth()->user()->name }}
+                    </p>
+
                     <p class="text-xs text-slate-400 truncate">
-                        {{ auth()->user()->isSuperAdmin() ? 'Super Admin' : 'Admin' }}
+                        {{ auth()->user()->isSuperAdmin() ? 'Super Admin' : 'Admin Fakultas' }}
                     </p>
                 </div>
             </div>
+
         </div>
 
     </div>

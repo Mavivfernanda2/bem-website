@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\Program;
 use App\Models\Faculty;
 use App\Models\Organization;
+use App\Models\Member;
 
 class PageController extends Controller
 {
@@ -60,7 +61,7 @@ class PageController extends Controller
 
     /**
      * =========================
-     * PROGRAM GLOBAL (BEM + HIMA)
+     * PROGRAM
      * =========================
      */
     public function program()
@@ -73,11 +74,6 @@ class PageController extends Controller
         return view('pages.program', compact('programs'));
     }
 
-    /**
-     * =========================
-     * DETAIL PROGRAM  ✅ (FINAL FIX)
-     * =========================
-     */
     public function showProgram(Program $program)
     {
         return view('pages.program-detail', compact('program'));
@@ -98,11 +94,6 @@ class PageController extends Controller
         return view('pages.berita', compact('news'));
     }
 
-    /**
-     * =========================
-     * DETAIL BERITA
-     * =========================
-     */
     public function beritaDetail($slug)
     {
         $berita = News::where('slug', $slug)
@@ -119,24 +110,39 @@ class PageController extends Controller
     }
 
     /**
-     * ==================================================
-     * BEM FAKULTAS + HIMA (FINAL & STABIL)
-     * ==================================================
+     * =========================
+     * ORMAWA
+     * =========================
+     */
+    public function ormawa()
+    {
+        $faculties = Faculty::orderBy('name')->get();
+
+        $organizations = Organization::with('faculty')
+            ->orderBy('name')
+            ->get();
+
+        return view('ormawa.index', compact('faculties', 'organizations'));
+    }
+
+    /**
+     * =========================
+     * 🔥 FAKULTAS (SUPER FINAL FIX)
+     * =========================
      */
     public function fakultas($slug)
     {
         /**
-         * Alias URL → slug database
+         * Alias URL
          */
         $aliasMap = [
-                'filkom' => 'fakultas-ilmu-komputer',
-                'ft'     => 'fakultas-teknik',
-               'fkip'   => 'fakultas-keguruan',
-              'fai'    => 'fakultas-agama-islam',
-             'fe'     => 'fakultas-ekonomi',
+            'filkom' => 'fakultas-ilmu-komputer',
+            'ft'     => 'fakultas-teknik',
+            'fkip'   => 'fakultas-keguruan',
+            'fai'    => 'fakultas-agama-islam',
+            'fe'     => 'fakultas-ekonomi',
         ];
 
-        // Redirect alias (SEO-friendly)
         if (isset($aliasMap[$slug])) {
             return redirect()->route('fakultas.show', [
                 'slug' => $aliasMap[$slug],
@@ -149,39 +155,27 @@ class PageController extends Controller
         $faculty = Faculty::where('slug', $slug)->firstOrFail();
 
         /**
-         * BEM Fakultas + eager load semua relasi
+         * BEM Fakultas
          */
         $bem = Organization::where('faculty_id', $faculty->id)
             ->where('type', 'bem')
             ->with([
                 'leaders',
-                'programs' => function ($q) {
-                    $q->where('status', 'active')
-                      ->orderByDesc('start_date');
-                },
-                'news' => function ($q) {
-                    $q->where('status', 'published')
-                      ->orderByDesc('publish_date');
-                },
+                'programs' => fn($q) => $q->where('status', 'active')->latest('start_date'),
+                'news'     => fn($q) => $q->where('status', 'published')->latest('publish_date'),
                 'himas.leaders',
-                'himas.programs' => function ($q) {
-                    $q->where('status', 'active')
-                      ->orderByDesc('start_date');
-                },
-                'himas.news' => function ($q) {
-                    $q->where('status', 'published')
-                      ->orderByDesc('publish_date');
-                },
+                'himas.programs' => fn($q) => $q->where('status', 'active')->latest('start_date'),
+                'himas.news'     => fn($q) => $q->where('status', 'published')->latest('publish_date'),
             ])
             ->firstOrFail();
 
         /**
-         * HIMA (child organization dari BEM)
+         * HIMA
          */
         $himas = $bem->himas;
 
         /**
-         * Berita Fakultas (gabungan BEM + semua HIMA)
+         * News gabungan
          */
         $news = $bem->news
             ->merge($himas->flatMap->news)
@@ -189,10 +183,33 @@ class PageController extends Controller
             ->values();
 
         /**
-         * Fakultas lain (navigasi)
+         * Fakultas lain
          */
         $otherFaculties = Faculty::where('id', '!=', $faculty->id)
             ->orderBy('name')
+            ->get();
+
+        /**
+         * =====================================
+         * 🔥🔥🔥 MEMBERS FINAL SUPER FIX 🔥🔥🔥
+         * =====================================
+         * AMBIL MEMBER BERDASARKAN ORGANIZATION
+         * BUKAN CUMA faculty_id
+         */
+        $members = Member::whereHas('organization', function ($q) use ($faculty) {
+                $q->where('faculty_id', $faculty->id);
+            })
+            ->where('is_active', 1)
+            ->orderByRaw("
+                CASE 
+                    WHEN position = 'Ketua' THEN 1
+                    WHEN position = 'Wakil Ketua' THEN 2
+                    WHEN position = 'Sekretaris' THEN 3
+                    WHEN position = 'Bendahara' THEN 4
+                    ELSE 5
+                END
+            ")
+            ->orderBy('order')
             ->get();
 
         return view('pages.fakultas.index', compact(
@@ -200,7 +217,8 @@ class PageController extends Controller
             'bem',
             'himas',
             'news',
-            'otherFaculties'
+            'otherFaculties',
+            'members'
         ));
     }
 }

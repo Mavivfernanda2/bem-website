@@ -13,48 +13,35 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        // 🔒 Pastikan user login
+        // 🔒 Pastikan user sudah login
         if (!auth()->check()) {
-            return redirect('/admin/login');
+            return redirect()->route('admin.login')
+                ->with('error', 'Silakan login terlebih dahulu');
         }
 
         $user = auth()->user();
 
-        // ❌ Tidak punya role
+        // ❌ Tidak punya relasi role
         if (!$user->role) {
             abort(403, 'User tidak memiliki role');
         }
 
-        // 🔥 Ambil nama role
+        // 🔥 Ambil nama role dari database
         $roleName = $user->role->name;
 
-        // 🔁 NORMALISASI ROLE (alias)
-        $aliases = [
-            'faculty_admin' => 'admin_fakultas',
-        ];
-
-        if (isset($aliases[$roleName])) {
-            $roleName = $aliases[$roleName];
-        }
 
         // 💣 SUPER ADMIN = FULL AKSES
         if ($roleName === 'super_admin') {
             return $next($request);
         }
 
-        // 🔥 ADMIN UNIV = FULL AKSES (semua fitur admin)
-        if ($roleName === 'admin_univ') {
+        // 🎯 Cek apakah role user ada di parameter route
+        if (in_array($roleName, $roles)) {
             return $next($request);
         }
 
-        // 🎯 ADMIN FAKULTAS = SESUAI ROUTE
-        if ($roleName === 'admin_fakultas') {
-            if (in_array('admin_fakultas', $roles)) {
-                return $next($request);
-            }
-        }
-
-        // ❌ Default: ditolak
-        abort(403, 'Akses ditolak');
+        // ❌ Ditolak jika tidak sesuai
+        return redirect()->route('admin.login')
+            ->with('error', 'You do not have admin access.');
     }
 }

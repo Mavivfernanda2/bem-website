@@ -33,6 +33,12 @@
                 <a href="{{ route('program') }}" class="nav-link text-white">PROGRAM</a>
                 <a href="{{ route('berita') }}" class="nav-link text-white">BERITA</a>
 
+                <!-- ✅ TAMBAHAN ORMAWA -->
+                <a href="{{ route('ormawa.index') }}"
+                   class="nav-link text-white font-semibold hover:text-accent transition">
+                    ORMAWA
+                </a>
+
                 <!-- DROPDOWN FAKULTAS (DB) -->
                 <div class="relative group">
                     <button
@@ -93,6 +99,12 @@
             <a href="{{ route('profil') }}" class="block py-3 px-4 text-white">PROFIL</a>
             <a href="{{ route('program') }}" class="block py-3 px-4 text-white">PROGRAM</a>
             <a href="{{ route('berita') }}" class="block py-3 px-4 text-white">BERITA</a>
+
+            <!-- ✅ TAMBAHAN ORMAWA (MOBILE) -->
+            <a href="{{ route('ormawa.index') }}"
+               class="block py-3 px-4 text-white font-semibold hover:text-accent">
+                ORMAWA
+            </a>
 
             <!-- MOBILE FAKULTAS -->
             <div class="pt-3 border-t border-white/10">
