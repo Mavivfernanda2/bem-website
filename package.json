@@ -1,22 +1,19 @@
 {
-    "$schema": "https://www.schemastore.org/package.json",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite"
-    },
-    "devDependencies": {
-        "@tailwindcss/vite": "^4.0.0",
-        "autoprefixer": "^10.4.23",
-        "axios": "^1.11.0",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^2.0.0",
-        "postcss": "^8.5.6",
-        "tailwindcss": "^4.1.18",
-        "vite": "^7.0.7"
-    },
-    "dependencies": {
-        "sweetalert2": "^11.26.17"
-    }
+  "name": "ipnu-digital-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IPNU IPPNU Digital Platform — Modern Fullstack TypeScript",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "install:all": "cd frontend && npm install && cd ../backend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4"
+  }
 }
